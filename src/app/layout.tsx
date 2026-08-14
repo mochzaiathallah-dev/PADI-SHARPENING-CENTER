@@ -58,7 +58,10 @@ export const metadata: Metadata = {
     "geo.placename": "Surabaya",
     "geo.position": "-7.3193;112.7990",
     "ICBM": "-7.3193, 112.7990",
-  }
+  },
+  verification: {
+    google: "sC6q7THR5ffMt8fqoBtrN5TKS8ffOJVd8wz25q-VNh4",
+  },
 };
 
 export default async function RootLayout({
