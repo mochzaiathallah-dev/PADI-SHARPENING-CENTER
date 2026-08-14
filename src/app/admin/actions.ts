@@ -84,7 +84,7 @@ export async function getProducts() {
     orderBy: { createdAt: "desc" },
   });
   // Convert Decimal to plain number for Server→Client serialization
-  return products.map((p) => ({
+  return products.map((p: any) => ({
     ...p,
     price: Number(p.price),
     originalPrice: p.originalPrice ? Number(p.originalPrice) : null,
@@ -303,7 +303,7 @@ export async function getServices() {
     orderBy: { createdAt: "desc" },
   });
   // Convert Decimal to plain number for Server→Client serialization
-  return services.map((s) => ({
+  return services.map((s: any) => ({
     ...s,
     price: Number(s.price),
     originalPrice: s.originalPrice ? Number(s.originalPrice) : null,
@@ -443,7 +443,7 @@ export async function getTrainings() {
     orderBy: { createdAt: "desc" },
   });
   // Convert Decimal to plain number for Server→Client serialization
-  return trainings.map((t) => ({
+  return trainings.map((t: any) => ({
     ...t,
     price: Number(t.price),
   }));
