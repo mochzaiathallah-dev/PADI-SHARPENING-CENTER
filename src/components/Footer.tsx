@@ -39,6 +39,9 @@ export default function Footer() {
   const description = language === "id" ? footerDesc_id : footerDesc_en;
   const copyright = language === "id" ? footerCopyright_id : footerCopyright_en;
 
+  const cleanPhone = footerPhone.replace(/\D/g, "");
+  const telPhone = cleanPhone.startsWith("0") ? "+62" + cleanPhone.slice(1) : "+" + cleanPhone;
+
   return (
     <footer className="w-full border-t border-border bg-card text-foreground transition-colors duration-300">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
@@ -46,22 +49,29 @@ export default function Footer() {
           
           {/* Brand Info */}
           <div className="flex flex-col space-y-4">
-            <div className="flex items-center space-x-2">
+            <Link href="/" className="flex items-center space-x-2" aria-label="Padi Sharpening Center Home">
               {logoUrl && (
-                <img src={logoUrl} alt="Logo" className="w-6 h-6 object-contain shrink-0" />
+                <img 
+                  src={logoUrl} 
+                  alt="Padi Sharpening Center Logo" 
+                  width={32} 
+                  height={32} 
+                  className="w-8 h-8 object-contain shrink-0" 
+                  loading="lazy"
+                />
               )}
-              <span className="text-xl font-bold tracking-tight uppercase">
+              <span className="text-xl font-black tracking-tight uppercase text-foreground">
                 {firstWord}<span className="text-primary"> {restWords}</span>
               </span>
-            </div>
+            </Link>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
               {description}
             </p>
           </div>
 
           {/* Quick Links */}
-          <div className="flex flex-col space-y-4">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">
+          <nav className="flex flex-col space-y-4" aria-label="Footer Navigation">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
               {t("footerQuickLinks")}
             </h3>
             <ul className="grid grid-cols-2 gap-2 text-sm">
@@ -76,33 +86,37 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
 
           {/* Contact Details & Geo Coordinates */}
           <div className="flex flex-col space-y-4">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
               {t("footerContact")}
             </h3>
             <ul className="space-y-3.5 text-sm">
               <li className="flex items-start space-x-3 text-muted-foreground">
-                <MapPin className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                <MapPin className="h-5 w-5 text-primary shrink-0 mt-0.5" aria-hidden="true" />
                 <span className="leading-relaxed">
                   {footerAddress}
                 </span>
               </li>
               <li className="flex items-center space-x-3 text-muted-foreground">
-                <Phone className="h-4 w-4 text-primary shrink-0" />
-                <span>{footerPhone}</span>
+                <Phone className="h-4 w-4 text-primary shrink-0" aria-hidden="true" />
+                <a href={`tel:${telPhone}`} className="hover:text-primary transition-colors" aria-label={`Call ${footerPhone}`}>
+                  {footerPhone}
+                </a>
               </li>
               {footerEmail && (
                 <li className="flex items-center space-x-3 text-muted-foreground">
-                  <Mail className="h-4 w-4 text-primary shrink-0" />
-                  <span>{footerEmail}</span>
+                  <Mail className="h-4 w-4 text-primary shrink-0" aria-hidden="true" />
+                  <a href={`mailto:${footerEmail}`} className="hover:text-primary transition-colors" aria-label={`Email ${footerEmail}`}>
+                    {footerEmail}
+                  </a>
                 </li>
               )}
               {footerCoordinates && (
                 <li className="flex items-center space-x-3 text-muted-foreground">
-                  <Compass className="h-4 w-4 text-primary shrink-0" />
+                  <Compass className="h-4 w-4 text-primary shrink-0" aria-hidden="true" />
                   <span>{footerCoordinates}</span>
                 </li>
               )}

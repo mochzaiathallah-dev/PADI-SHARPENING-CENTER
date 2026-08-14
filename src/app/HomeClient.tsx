@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useApp } from "../context/AppContext";
@@ -8,9 +8,14 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { ShieldCheck, Flame, Compass, ArrowRight } from "lucide-react";
 
+// Defer 3D Canvas until after initial client mount to ensure 0ms main thread blocking time on load
 const Hero3D = dynamic(() => import("../components/Hero3D"), {
   ssr: false,
-  loading: () => <div className="w-full h-full" />,
+  loading: () => (
+    <div className="w-full h-full min-h-[350px] sm:min-h-[500px] flex items-center justify-center bg-card/20 rounded-3xl animate-pulse">
+      <div className="h-12 w-12 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+    </div>
+  ),
 });
 
 type SiteSettingsType = {
@@ -61,6 +66,13 @@ type HomeClientProps = {
 
 export default function HomeClient({ settings }: HomeClientProps) {
   const { t, language, footerPhone } = useApp();
+  const [show3D, setShow3D] = useState(false);
+
+  useEffect(() => {
+    // Mount 3D canvas after initial render loop to prevent initial main thread blocking
+    const timer = setTimeout(() => setShow3D(true), 50);
+    return () => clearTimeout(timer);
+  }, []);
 
   const cleanPhone = footerPhone.replace(/\D/g, "");
   const waPhone = cleanPhone.startsWith("0") ? "62" + cleanPhone.slice(1) : cleanPhone;
@@ -82,7 +94,7 @@ export default function HomeClient({ settings }: HomeClientProps) {
   const feat1Title = language === "id" ? settings.feature1Title_id : settings.feature1Title_en;
   const feat1Desc = language === "id" ? settings.feature1Desc_id : settings.feature1Desc_en;
 
-  const feat2Title = language === "id" ? settings.feature2Title_id : settings.feature2Title_en;
+  const feat2Title = language === "id" ? settings.feature2Title_id : settings.feature2Desc_en;
   const feat2Desc = language === "id" ? settings.feature2Desc_id : settings.feature2Desc_en;
 
   const feat3Title = language === "id" ? settings.feature3Title_id : settings.feature3Title_en;
@@ -124,7 +136,7 @@ export default function HomeClient({ settings }: HomeClientProps) {
                 
                 {/* Promo Badge */}
                 <div className="inline-flex items-center space-x-2 self-start rounded-full border border-primary/25 bg-primary/5 px-3 py-1 text-xs font-semibold text-primary">
-                  <Flame className="h-3.5 w-3.5 fill-current" />
+                  <Flame className="h-3.5 w-3.5 fill-current" aria-hidden="true" />
                   <span>Surabaya Local Business #1</span>
                 </div>
 
@@ -150,9 +162,10 @@ export default function HomeClient({ settings }: HomeClientProps) {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3.5 text-sm font-bold text-primary-foreground shadow-md hover:bg-primary/95 transition-all group gap-2"
+                    aria-label="Book Sharpening Service on WhatsApp"
                   >
                     <span>{t("heroCtaMain")}</span>
-                    <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
                   </a>
                   <Link
                     href="/catalog"
@@ -176,30 +189,37 @@ export default function HomeClient({ settings }: HomeClientProps) {
 
               </div>
 
-              {/* Hero Right Media Anim / 3D Canvas */}
-              <div className="lg:col-span-6 w-full h-87.5 sm:h-125 flex items-center justify-center bg-card/45 border border-border/60 rounded-3xl overflow-hidden shadow-2xl relative">
+              {/* Hero Right Media Anim / 3D Canvas (Zero CLS container with fixed min-height) */}
+              <div 
+                className="lg:col-span-6 w-full h-[350px] sm:h-[500px] min-h-[350px] sm:min-h-[500px] flex items-center justify-center bg-card/45 border border-border/60 rounded-3xl overflow-hidden shadow-2xl relative"
+                style={{ minHeight: "350px" }}
+              >
                 {/* Abstract corner decors */}
-                <div className="absolute top-4 left-4 flex space-x-1">
+                <div className="absolute top-4 left-4 flex space-x-1 z-10">
                   <div className="h-2 w-2 rounded-full bg-border" />
                   <div className="h-2 w-2 rounded-full bg-border" />
                   <div className="h-2 w-2 rounded-full bg-border" />
                 </div>
                 
-                {settings.heroAnimationUrl ? (
-                  isVideoBase64(settings.heroAnimationUrl) ? (
-                    <video
-                      src={settings.heroAnimationUrl}
-                      className="w-full h-full object-cover"
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                    />
+                {show3D ? (
+                  settings.heroAnimationUrl ? (
+                    isVideoBase64(settings.heroAnimationUrl) ? (
+                      <video
+                        src={settings.heroAnimationUrl}
+                        className="w-full h-full object-cover"
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                      />
+                    ) : (
+                      <Hero3D imageUrl={settings.heroAnimationUrl} />
+                    )
                   ) : (
-                    <Hero3D imageUrl={settings.heroAnimationUrl} />
+                    <Hero3D />
                   )
                 ) : (
-                  <Hero3D />
+                  <div className="w-full h-full min-h-[350px] sm:min-h-[500px] bg-card/20 rounded-3xl" />
                 )}
               </div>
 
@@ -231,7 +251,7 @@ export default function HomeClient({ settings }: HomeClientProps) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mt-12 sm:mt-16">
               <div className="flex flex-col space-y-3 p-6 rounded-2xl border border-border bg-card shadow-sm hover:border-primary/45 transition-all">
                 <div className="p-3 bg-primary/10 text-primary self-start rounded-lg">
-                  <ShieldCheck className="h-6 w-6" />
+                  <ShieldCheck className="h-6 w-6" aria-hidden="true" />
                 </div>
                 <h3 className="text-lg font-bold text-foreground">{feat1Title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{feat1Desc}</p>
@@ -239,7 +259,7 @@ export default function HomeClient({ settings }: HomeClientProps) {
 
               <div className="flex flex-col space-y-3 p-6 rounded-2xl border border-border bg-card shadow-sm hover:border-primary/45 transition-all">
                 <div className="p-3 bg-primary/10 text-primary self-start rounded-lg">
-                  <Flame className="h-6 w-6" />
+                  <Flame className="h-6 w-6" aria-hidden="true" />
                 </div>
                 <h3 className="text-lg font-bold text-foreground">{feat2Title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{feat2Desc}</p>
@@ -247,7 +267,7 @@ export default function HomeClient({ settings }: HomeClientProps) {
 
               <div className="flex flex-col space-y-3 p-6 rounded-2xl border border-border bg-card shadow-sm hover:border-primary/45 transition-all">
                 <div className="p-3 bg-primary/10 text-primary self-start rounded-lg">
-                  <Compass className="h-6 w-6" />
+                  <Compass className="h-6 w-6" aria-hidden="true" />
                 </div>
                 <h3 className="text-lg font-bold text-foreground">{feat3Title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{feat3Desc}</p>
@@ -256,7 +276,7 @@ export default function HomeClient({ settings }: HomeClientProps) {
           </div>
         </section>
 
-        {/* GOOGLE MAPS EMBED SECTION */}
+        {/* GOOGLE MAPS EMBED SECTION (Zero CLS container) */}
         <section className="py-12 bg-background border-t border-border/80">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
             <div className="text-center space-y-2">
@@ -264,12 +284,16 @@ export default function HomeClient({ settings }: HomeClientProps) {
                 {language === "id" ? "Lokasi Kami" : "Our Location"}
               </h2>
             </div>
-            <div className="w-full h-96 rounded-2xl overflow-hidden border border-border shadow-md">
+            <div 
+              className="w-full h-96 min-h-[384px] rounded-2xl overflow-hidden border border-border shadow-md"
+              style={{ minHeight: "384px" }}
+            >
               <iframe
                 src={mapsUrl}
                 width="100%"
-                height="100%"
-                style={{ border: 0 }}
+                height="384"
+                title="Padi Sharpening Center Location Map"
+                style={{ border: 0, minHeight: "384px" }}
                 allowFullScreen={true}
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"

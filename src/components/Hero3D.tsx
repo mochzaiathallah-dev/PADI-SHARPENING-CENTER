@@ -13,12 +13,12 @@ function BladeAndStone() {
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
     if (groupRef.current) {
-      groupRef.current.rotation.y = t * 0.3;
+      groupRef.current.rotation.y = t * 0.25;
     }
     if (knifeRef.current) {
-      knifeRef.current.position.y = Math.sin(t * 1.5) * 0.12 + 0.3;
-      knifeRef.current.rotation.x = Math.sin(t * 0.8) * 0.08;
-      knifeRef.current.rotation.z = Math.cos(t * 0.8) * 0.05 + 0.5;
+      knifeRef.current.position.y = Math.sin(t * 1.2) * 0.1 + 0.3;
+      knifeRef.current.rotation.x = Math.sin(t * 0.7) * 0.06;
+      knifeRef.current.rotation.z = Math.cos(t * 0.7) * 0.04 + 0.5;
     }
   });
 
@@ -40,7 +40,7 @@ function BladeAndStone() {
       <group ref={knifeRef} position={[0, 0.3, 0]}>
         {/* Handle */}
         <mesh position={[-0.8, 0, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
-          <cylinderGeometry args={[0.07, 0.07, 0.6, 16]} />
+          <cylinderGeometry args={[0.07, 0.07, 0.6, 12]} />
           <meshStandardMaterial color="#7c2d12" roughness={0.8} metalness={0.0} />
         </mesh>
 
@@ -67,25 +67,21 @@ function BladeAndStone() {
 }
 
 // ─── Floating Image Plane (Image Uploaded) ─────────────────────────────────────
-// Renders the image as a transparent, frameless floating plane in 3D space.
-// No box, no frame — the image hovers cleanly like a hologram.
 function FloatingImagePlane({ url }: { url: string }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const texture = useTexture(url);
 
-  // HD texture quality settings
   useEffect(() => {
     if (texture) {
       texture.colorSpace = THREE.SRGBColorSpace;
-      texture.minFilter = THREE.LinearMipmapLinearFilter; // sharpen when scaled down
-      texture.magFilter = THREE.LinearFilter;             // sharpen when scaled up
-      texture.generateMipmaps = true;
-      texture.anisotropy = 16;                            // max sharpness at oblique angles
+      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.generateMipmaps = false;
+      texture.anisotropy = 4;
       texture.needsUpdate = true;
     }
   }, [texture]);
 
-  // Calculate plane aspect ratio from texture
   const img = texture.image as HTMLImageElement | null;
   const aspect =
     img && img.naturalWidth && img.naturalHeight
@@ -98,11 +94,9 @@ function FloatingImagePlane({ url }: { url: string }) {
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
     if (meshRef.current) {
-      // Gentle floating up-down
-      meshRef.current.position.y = Math.sin(t * 0.9) * 0.18;
-      // Slow pendulum rotation — feels alive, not spinning
-      meshRef.current.rotation.y = Math.sin(t * 0.35) * 0.55;
-      meshRef.current.rotation.x = Math.sin(t * 0.25) * 0.08;
+      meshRef.current.position.y = Math.sin(t * 0.8) * 0.15;
+      meshRef.current.rotation.y = Math.sin(t * 0.3) * 0.45;
+      meshRef.current.rotation.x = Math.sin(t * 0.2) * 0.06;
     }
   });
 
@@ -112,8 +106,8 @@ function FloatingImagePlane({ url }: { url: string }) {
       <meshStandardMaterial
         map={texture}
         transparent={true}
-        alphaTest={0.05}          // removes dark background edges
-        side={THREE.DoubleSide}   // visible from both sides when rotating
+        alphaTest={0.05}
+        side={THREE.DoubleSide}
         roughness={0.25}
         metalness={0.05}
       />
@@ -121,12 +115,10 @@ function FloatingImagePlane({ url }: { url: string }) {
   );
 }
 
-
-
 // ─── Main Export ───────────────────────────────────────────────────────────────
 export default function Hero3D({ imageUrl }: { imageUrl?: string | null }) {
   return (
-    <div className="w-full h-full relative cursor-grab active:cursor-grabbing">
+    <div className="w-full h-full relative cursor-grab active:cursor-grabbing min-h-[350px] sm:min-h-[500px]">
       {/* Ambient glow backdrop */}
       <div className="absolute inset-0 pointer-events-none" style={{
         background: "radial-gradient(ellipse at 50% 50%, hsl(var(--primary) / 0.08) 0%, transparent 70%)"
@@ -134,29 +126,24 @@ export default function Hero3D({ imageUrl }: { imageUrl?: string | null }) {
 
       <Canvas
         camera={{ position: [0, 0.5, 4.5], fov: 42 }}
-        shadows={{ type: THREE.PCFShadowMap }}
-        dpr={[1, 2]}                           // match device pixel ratio for HD
-        gl={{ antialias: true, alpha: true }}
-        style={{ background: "transparent" }}
+        shadows={{ type: THREE.BasicShadowMap }}
+        dpr={[1, 1.5]}
+        gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+        style={{ background: "transparent", width: "100%", height: "100%" }}
       >
-        {/* Ambient fill */}
         <ambientLight intensity={1.8} />
 
-        {/* Key light — top-left, warm */}
         <directionalLight
           position={[4, 7, 4]}
-          intensity={2.5}
+          intensity={2.2}
           castShadow
-          shadow-mapSize-width={1024}
-          shadow-mapSize-height={1024}
+          shadow-mapSize-width={512}
+          shadow-mapSize-height={512}
           color="#fff8f0"
         />
 
-        {/* Fill light — soft cool from behind */}
-        <directionalLight position={[-4, 2, -4]} intensity={0.7} color="#c7d8ff" />
-
-        {/* Accent glow from below */}
-        <pointLight position={[0, -1.5, 1]} intensity={0.9} color="#f43f5e" />
+        <directionalLight position={[-4, 2, -4]} intensity={0.6} color="#c7d8ff" />
+        <pointLight position={[0, -1.5, 1]} intensity={0.8} color="#f43f5e" />
 
         <Suspense fallback={null}>
           {imageUrl ? (
@@ -171,7 +158,7 @@ export default function Hero3D({ imageUrl }: { imageUrl?: string | null }) {
           minPolarAngle={Math.PI / 8}
           maxPolarAngle={(Math.PI * 3) / 4}
           enableDamping
-          dampingFactor={0.06}
+          dampingFactor={0.08}
         />
       </Canvas>
     </div>
