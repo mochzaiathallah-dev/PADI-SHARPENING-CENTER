@@ -12,7 +12,7 @@ import { ShieldCheck, Flame, Compass, ArrowRight } from "lucide-react";
 const Hero3D = dynamic(() => import("../components/Hero3D"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full min-h-[350px] sm:min-h-[500px] flex items-center justify-center bg-card/20 rounded-3xl">
+    <div className="w-full h-full min-h-87.5 sm:min-h-125 flex items-center justify-center bg-card/20 rounded-3xl">
       <div className="h-10 w-10 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
     </div>
   ),
@@ -91,7 +91,7 @@ function HeroMediaContainer({ settings }: { settings: SiteSettingsType }) {
     <div 
       onMouseEnter={() => setShouldLoad3D(true)}
       onTouchStart={() => setShouldLoad3D(true)}
-      className="lg:col-span-6 w-full h-[350px] sm:h-[500px] min-h-[350px] sm:min-h-[500px] flex items-center justify-center bg-card/45 border border-border/60 rounded-3xl overflow-hidden shadow-2xl relative shrink-0"
+      className="lg:col-span-6 w-full h-87.5 sm:h-125 min-h-87.5 sm:min-h-125 flex items-center justify-center bg-card/45 border border-border/60 rounded-3xl overflow-hidden shadow-2xl relative shrink-0"
       style={{ minHeight: "350px", height: "500px" }}
     >
       {/* Abstract corner decors */}
@@ -114,7 +114,7 @@ function HeroMediaContainer({ settings }: { settings: SiteSettingsType }) {
         <Hero3D imageUrl={settings.heroAnimationUrl} />
       ) : (
         <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center relative group cursor-pointer">
-          <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-primary/5 animate-pulse" />
+          <div className="absolute inset-0 bg-linear-to-tr from-primary/10 via-transparent to-primary/5 animate-pulse" />
           <img
             src="/uploads/1785501651772_Gemini_Generated_Image_murzqsmurzqsmurz-clean-Photoroom.png"
             alt="Padi Sharpening Premium Blade Preview"
@@ -307,7 +307,7 @@ export default function HomeClient({ settings }: HomeClientProps) {
               </h2>
             </div>
             <div 
-              className="w-full h-[384px] min-h-[384px] rounded-2xl overflow-hidden border border-border shadow-md shrink-0"
+              className="w-full h-96 min-h-96 rounded-2xl overflow-hidden border border-border shadow-md shrink-0"
               style={{ height: "384px", minHeight: "384px" }}
             >
               <iframe

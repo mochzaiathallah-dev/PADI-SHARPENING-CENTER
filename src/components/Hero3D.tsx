@@ -118,7 +118,7 @@ function FloatingImagePlane({ url }: { url: string }) {
 // ─── Main Export ───────────────────────────────────────────────────────────────
 export default function Hero3D({ imageUrl }: { imageUrl?: string | null }) {
   return (
-    <div className="w-full h-full relative cursor-grab active:cursor-grabbing min-h-[350px] sm:min-h-[500px]">
+    <div className="w-full h-full relative cursor-grab active:cursor-grabbing min-h-87.5 sm:min-h-125">
       {/* Ambient glow backdrop */}
       <div className="absolute inset-0 pointer-events-none" style={{
         background: "radial-gradient(ellipse at 50% 50%, hsl(var(--primary) / 0.08) 0%, transparent 70%)"
