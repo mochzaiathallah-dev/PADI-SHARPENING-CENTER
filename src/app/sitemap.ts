@@ -19,7 +19,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const products = await prisma.product.findMany({
       select: { slug: true, updatedAt: true },
     });
-    const productRoutes = products.map((p) => ({
+    const productRoutes = products.map((p: any) => ({
       url: `${baseUrl}/catalog/${p.slug}`,
       lastModified: p.updatedAt,
       changeFrequency: "weekly" as const,
@@ -30,7 +30,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const services = await prisma.service.findMany({
       select: { slug: true, updatedAt: true },
     });
-    const serviceRoutes = services.map((s) => ({
+    const serviceRoutes = services.map((s: any) => ({
       url: `${baseUrl}/services/${s.slug}`,
       lastModified: s.updatedAt,
       changeFrequency: "weekly" as const,
@@ -41,7 +41,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const portfolios = await prisma.portfolio.findMany({
       select: { slug: true, updatedAt: true },
     });
-    const portfolioRoutes = portfolios.map((port) => ({
+    const portfolioRoutes = portfolios.map((port: any) => ({
       url: `${baseUrl}/portfolio/${port.slug}`,
       lastModified: port.updatedAt,
       changeFrequency: "weekly" as const,
