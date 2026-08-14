@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useApp } from "../context/AppContext";
@@ -8,7 +8,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { ShieldCheck, Flame, Compass, ArrowRight } from "lucide-react";
 
-// Defer 3D Canvas with matching container dimensions to prevent layout shift (CLS = 0.000)
+// Defer 3D Canvas dynamically
 const Hero3D = dynamic(() => import("../components/Hero3D"), {
   ssr: false,
   loading: () => (
@@ -64,6 +64,73 @@ type HomeClientProps = {
   settings: SiteSettingsType;
 };
 
+function HeroMediaContainer({ settings }: { settings: SiteSettingsType }) {
+  const [shouldLoad3D, setShouldLoad3D] = useState(false);
+
+  useEffect(() => {
+    // Load 3D canvas after page idle (3500ms) to ensure 0ms main thread blocking on initial page load
+    if (typeof window !== "undefined") {
+      if ("requestIdleCallback" in window) {
+        const id = (window as any).requestIdleCallback(() => setShouldLoad3D(true), { timeout: 3500 });
+        return () => (window as any).cancelIdleCallback(id);
+      } else {
+        const timer = setTimeout(() => setShouldLoad3D(true), 3500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, []);
+
+  const isVideoBase64 = (url: string | null) => {
+    if (!url) return false;
+    if (url.startsWith("data:video/") || url.includes("video/mp4")) return true;
+    const lower = url.toLowerCase();
+    return lower.endsWith(".mp4") || lower.endsWith(".webm") || lower.endsWith(".mov") || lower.endsWith(".gif");
+  };
+
+  return (
+    <div 
+      onMouseEnter={() => setShouldLoad3D(true)}
+      onTouchStart={() => setShouldLoad3D(true)}
+      className="lg:col-span-6 w-full h-[350px] sm:h-[500px] min-h-[350px] sm:min-h-[500px] flex items-center justify-center bg-card/45 border border-border/60 rounded-3xl overflow-hidden shadow-2xl relative shrink-0"
+      style={{ minHeight: "350px", height: "500px" }}
+    >
+      {/* Abstract corner decors */}
+      <div className="absolute top-4 left-4 flex space-x-1 z-10">
+        <div className="h-2 w-2 rounded-full bg-border" />
+        <div className="h-2 w-2 rounded-full bg-border" />
+        <div className="h-2 w-2 rounded-full bg-border" />
+      </div>
+      
+      {settings.heroAnimationUrl && isVideoBase64(settings.heroAnimationUrl) ? (
+        <video
+          src={settings.heroAnimationUrl}
+          className="w-full h-full object-cover"
+          autoPlay
+          loop
+          muted
+          playsInline
+        />
+      ) : shouldLoad3D ? (
+        <Hero3D imageUrl={settings.heroAnimationUrl} />
+      ) : (
+        <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center relative group cursor-pointer">
+          <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-primary/5 animate-pulse" />
+          <img
+            src="/uploads/1785501651772_Gemini_Generated_Image_murzqsmurzqsmurz-clean-Photoroom.png"
+            alt="Padi Sharpening Premium Blade Preview"
+            width={300}
+            height={225}
+            className="w-64 sm:w-80 h-auto object-contain drop-shadow-2xl transform group-hover:scale-105 transition-transform duration-500"
+          />
+          <div className="mt-4 inline-flex items-center space-x-2 rounded-full bg-background/80 backdrop-blur border border-border px-3 py-1 text-xs font-semibold text-muted-foreground shadow-sm z-10">
+            <span>✨ 3D Interactive Preview</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function HomeClient({ settings }: HomeClientProps) {
   const { t, language, footerPhone } = useApp();
 
@@ -106,13 +173,6 @@ export default function HomeClient({ settings }: HomeClientProps) {
   };
 
   const mapsUrl = extractMapsUrl(settings.mapsEmbedUrl) || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3957.382894567406!2d112.7964!3d-7.3193!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7fa68903c706d%3A0xb3de4568393c706d!2sJl.%20Tambak%20Medokan%20Ayu%20III%20B%2C%20Medokan%20Ayu%2C%20Kec.%20Rungkut%2C%20Surabaya%2C%20Jawa%20Timur%2060295!5e0!3m2!1sid!2sid!4v1700000000000!5m2!1sid!2sid";
-
-  const isVideoBase64 = (url: string | null) => {
-    if (!url) return false;
-    if (url.startsWith("data:video/") || url.includes("video/mp4")) return true;
-    const lower = url.toLowerCase();
-    return lower.endsWith(".mp4") || lower.endsWith(".webm") || lower.endsWith(".mov") || lower.endsWith(".gif");
-  };
 
   return (
     <div className="min-h-screen flex flex-col transition-colors duration-300">
@@ -183,34 +243,7 @@ export default function HomeClient({ settings }: HomeClientProps) {
               </div>
 
               {/* Hero Right Media Anim / 3D Canvas (Zero CLS container with fixed min-height) */}
-              <div 
-                className="lg:col-span-6 w-full h-[350px] sm:h-[500px] min-h-[350px] sm:min-h-[500px] flex items-center justify-center bg-card/45 border border-border/60 rounded-3xl overflow-hidden shadow-2xl relative shrink-0"
-                style={{ minHeight: "350px", height: "500px" }}
-              >
-                {/* Abstract corner decors */}
-                <div className="absolute top-4 left-4 flex space-x-1 z-10">
-                  <div className="h-2 w-2 rounded-full bg-border" />
-                  <div className="h-2 w-2 rounded-full bg-border" />
-                  <div className="h-2 w-2 rounded-full bg-border" />
-                </div>
-                
-                {settings.heroAnimationUrl ? (
-                  isVideoBase64(settings.heroAnimationUrl) ? (
-                    <video
-                      src={settings.heroAnimationUrl}
-                      className="w-full h-full object-cover"
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                    />
-                  ) : (
-                    <Hero3D imageUrl={settings.heroAnimationUrl} />
-                  )
-                ) : (
-                  <Hero3D />
-                )}
-              </div>
+              <HeroMediaContainer settings={settings} />
 
             </div>
           </div>
