@@ -295,13 +295,17 @@ export function AppProvider({
 
     // 2. Theme Initialization (Resolve system preference automatically if not saved)
     const savedTheme = localStorage.getItem("theme") as Theme | null;
+    let initialTheme: Theme;
     if (savedTheme === "light" || savedTheme === "dark") {
-      setThemeState(savedTheme);
+      initialTheme = savedTheme;
     } else {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-      setThemeState(systemTheme);
-      localStorage.setItem("theme", systemTheme);
+      const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      initialTheme = isDark ? "dark" : "light";
     }
+    setThemeState(initialTheme);
+    const root = window.document.documentElement;
+    root.classList.remove("light", "dark");
+    root.classList.add(initialTheme);
 
     // 3. Track visitor session dynamically once per path per session (reduces DB function invocations)
     try {
@@ -324,12 +328,10 @@ export function AppProvider({
 
   // Update document class based on theme state
   useEffect(() => {
-    if (!mounted) return;
-
     const root = window.document.documentElement;
     root.classList.remove("light", "dark");
     root.classList.add(theme);
-  }, [theme, mounted]);
+  }, [theme]);
 
   const setTheme = (newTheme: Theme) => {
     // Only accept light or dark

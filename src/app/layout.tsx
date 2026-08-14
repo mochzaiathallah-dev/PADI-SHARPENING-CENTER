@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 import { AppProvider } from "../context/AppContext";
+import NavigationProgress from "../components/NavigationProgress";
+import { getSiteSettings } from "./admin/actions";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -59,8 +61,6 @@ export const metadata: Metadata = {
   }
 };
 
-import { getSiteSettings } from "./admin/actions";
-
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -114,14 +114,35 @@ export default async function RootLayout({
     <html
       lang="id"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <head />
+      <head>
+        {/* Instant blocking theme script to eliminate any white flash on dark mode devices */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var saved = localStorage.getItem('theme');
+                  var isDark = saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                  if (isDark) {
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <AppProvider initialSettings={JSON.parse(JSON.stringify(settings))}>
+          <NavigationProgress />
           {children}
         </AppProvider>
       </body>
