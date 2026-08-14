@@ -29,8 +29,8 @@ function createPrismaClient(): PrismaClient {
       password,
       database,
       connectionLimit,
-      connectTimeout: 4000,
-      acquireTimeout: 4000,
+      connectTimeout: 10000,
+      acquireTimeout: 10000,
     });
 
     return new PrismaClient({ adapter });
