@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useApp } from "../context/AppContext";
@@ -8,12 +8,12 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { ShieldCheck, Flame, Compass, ArrowRight } from "lucide-react";
 
-// Defer 3D Canvas until after initial client mount to ensure 0ms main thread blocking time on load
+// Defer 3D Canvas with matching container dimensions to prevent layout shift (CLS = 0.000)
 const Hero3D = dynamic(() => import("../components/Hero3D"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full min-h-[350px] sm:min-h-[500px] flex items-center justify-center bg-card/20 rounded-3xl animate-pulse">
-      <div className="h-12 w-12 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+    <div className="w-full h-full min-h-[350px] sm:min-h-[500px] flex items-center justify-center bg-card/20 rounded-3xl">
+      <div className="h-10 w-10 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
     </div>
   ),
 });
@@ -66,13 +66,6 @@ type HomeClientProps = {
 
 export default function HomeClient({ settings }: HomeClientProps) {
   const { t, language, footerPhone } = useApp();
-  const [show3D, setShow3D] = useState(false);
-
-  useEffect(() => {
-    // Mount 3D canvas after initial render loop to prevent initial main thread blocking
-    const timer = setTimeout(() => setShow3D(true), 50);
-    return () => clearTimeout(timer);
-  }, []);
 
   const cleanPhone = footerPhone.replace(/\D/g, "");
   const waPhone = cleanPhone.startsWith("0") ? "62" + cleanPhone.slice(1) : cleanPhone;
@@ -191,8 +184,8 @@ export default function HomeClient({ settings }: HomeClientProps) {
 
               {/* Hero Right Media Anim / 3D Canvas (Zero CLS container with fixed min-height) */}
               <div 
-                className="lg:col-span-6 w-full h-[350px] sm:h-[500px] min-h-[350px] sm:min-h-[500px] flex items-center justify-center bg-card/45 border border-border/60 rounded-3xl overflow-hidden shadow-2xl relative"
-                style={{ minHeight: "350px" }}
+                className="lg:col-span-6 w-full h-[350px] sm:h-[500px] min-h-[350px] sm:min-h-[500px] flex items-center justify-center bg-card/45 border border-border/60 rounded-3xl overflow-hidden shadow-2xl relative shrink-0"
+                style={{ minHeight: "350px", height: "500px" }}
               >
                 {/* Abstract corner decors */}
                 <div className="absolute top-4 left-4 flex space-x-1 z-10">
@@ -201,25 +194,21 @@ export default function HomeClient({ settings }: HomeClientProps) {
                   <div className="h-2 w-2 rounded-full bg-border" />
                 </div>
                 
-                {show3D ? (
-                  settings.heroAnimationUrl ? (
-                    isVideoBase64(settings.heroAnimationUrl) ? (
-                      <video
-                        src={settings.heroAnimationUrl}
-                        className="w-full h-full object-cover"
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                      />
-                    ) : (
-                      <Hero3D imageUrl={settings.heroAnimationUrl} />
-                    )
+                {settings.heroAnimationUrl ? (
+                  isVideoBase64(settings.heroAnimationUrl) ? (
+                    <video
+                      src={settings.heroAnimationUrl}
+                      className="w-full h-full object-cover"
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                    />
                   ) : (
-                    <Hero3D />
+                    <Hero3D imageUrl={settings.heroAnimationUrl} />
                   )
                 ) : (
-                  <div className="w-full h-full min-h-[350px] sm:min-h-[500px] bg-card/20 rounded-3xl" />
+                  <Hero3D />
                 )}
               </div>
 
@@ -285,15 +274,15 @@ export default function HomeClient({ settings }: HomeClientProps) {
               </h2>
             </div>
             <div 
-              className="w-full h-96 min-h-[384px] rounded-2xl overflow-hidden border border-border shadow-md"
-              style={{ minHeight: "384px" }}
+              className="w-full h-[384px] min-h-[384px] rounded-2xl overflow-hidden border border-border shadow-md shrink-0"
+              style={{ height: "384px", minHeight: "384px" }}
             >
               <iframe
                 src={mapsUrl}
                 width="100%"
                 height="384"
                 title="Padi Sharpening Center Location Map"
-                style={{ border: 0, minHeight: "384px" }}
+                style={{ border: 0, height: "384px", minHeight: "384px" }}
                 allowFullScreen={true}
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
