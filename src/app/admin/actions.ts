@@ -61,15 +61,19 @@ export async function recordActivityLog(
 
 // Helper to seed categories if empty
 async function ensureCategories() {
-  const count = await prisma.category.count();
-  if (count === 0) {
-    await prisma.category.createMany({
-      data: [
-        { name: "Alat Asah", slug: "sharpening", description: "Perkakas dan kelengkapan mengasah" },
-        { name: "Pisau", slug: "knives", description: "Bilah sembelih dan daging berkualitas" },
-        { name: "Aksesoris", slug: "accessories", description: "Sarung pengaman dan jasa grafir nama" },
-      ]
-    });
+  try {
+    const count = await prisma.category.count();
+    if (count === 0) {
+      await prisma.category.createMany({
+        data: [
+          { name: "Alat Asah", slug: "sharpening", description: "Perkakas dan kelengkapan mengasah" },
+          { name: "Pisau", slug: "knives", description: "Bilah sembelih dan daging berkualitas" },
+          { name: "Aksesoris", slug: "accessories", description: "Sarung pengaman dan jasa grafir nama" },
+        ]
+      });
+    }
+  } catch (error) {
+    console.warn("Could not reach DB for categories seed (offline or build time):", error);
   }
 }
 
@@ -78,17 +82,22 @@ async function ensureCategories() {
 // ==========================================
 
 export async function getProducts() {
-  await ensureCategories();
-  const products = await prisma.product.findMany({
-    include: { category: true },
-    orderBy: { createdAt: "desc" },
-  });
-  // Convert Decimal to plain number for Server→Client serialization
-  return products.map((p: any) => ({
-    ...p,
-    price: Number(p.price),
-    originalPrice: p.originalPrice ? Number(p.originalPrice) : null,
-  }));
+  try {
+    await ensureCategories();
+    const products = await prisma.product.findMany({
+      include: { category: true },
+      orderBy: { createdAt: "desc" },
+    });
+    // Convert Decimal to plain number for Server→Client serialization
+    return products.map((p: any) => ({
+      ...p,
+      price: Number(p.price),
+      originalPrice: p.originalPrice ? Number(p.originalPrice) : null,
+    }));
+  } catch (error) {
+    console.error("Failed to fetch products:", error);
+    return [];
+  }
 }
 
 export async function getProductBySlug(slug: string) {
@@ -110,10 +119,15 @@ export async function getProductBySlug(slug: string) {
 }
 
 export async function getCategories() {
-  await ensureCategories();
-  return prisma.category.findMany({
-    orderBy: { name: "asc" },
-  });
+  try {
+    await ensureCategories();
+    return await prisma.category.findMany({
+      orderBy: { name: "asc" },
+    });
+  } catch (error) {
+    console.error("Failed to fetch categories:", error);
+    return [];
+  }
 }
 
 export async function createCategory(name: string, description?: string | null) {
@@ -299,15 +313,20 @@ export async function deleteProduct(id: string) {
 // ==========================================
 
 export async function getServices() {
-  const services = await prisma.service.findMany({
-    orderBy: { createdAt: "desc" },
-  });
-  // Convert Decimal to plain number for Server→Client serialization
-  return services.map((s: any) => ({
-    ...s,
-    price: Number(s.price),
-    originalPrice: s.originalPrice ? Number(s.originalPrice) : null,
-  }));
+  try {
+    const services = await prisma.service.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+    // Convert Decimal to plain number for Server→Client serialization
+    return services.map((s: any) => ({
+      ...s,
+      price: Number(s.price),
+      originalPrice: s.originalPrice ? Number(s.originalPrice) : null,
+    }));
+  } catch (error) {
+    console.error("Failed to fetch services:", error);
+    return [];
+  }
 }
 
 export async function createService(formData: {
@@ -439,14 +458,19 @@ export async function deleteService(id: string) {
 // ==========================================
 
 export async function getTrainings() {
-  const trainings = await prisma.training.findMany({
-    orderBy: { createdAt: "desc" },
-  });
-  // Convert Decimal to plain number for Server→Client serialization
-  return trainings.map((t: any) => ({
-    ...t,
-    price: Number(t.price),
-  }));
+  try {
+    const trainings = await prisma.training.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+    // Convert Decimal to plain number for Server→Client serialization
+    return trainings.map((t: any) => ({
+      ...t,
+      price: Number(t.price),
+    }));
+  } catch (error) {
+    console.error("Failed to fetch trainings:", error);
+    return [];
+  }
 }
 
 export async function createTraining(formData: {
@@ -573,71 +597,76 @@ export async function deleteTraining(id: string) {
 // ==========================================
 
 export async function getActivityLogs() {
-  const count = await prisma.activityLog.count();
-  if (count === 0) {
-    // Seed exactly the 6 logs shown in the reference image
-    const mockLogs = [
-      {
-        admin: "divlatbang",
-        role: "DIVLATBANG",
-        module: "VisitorAnalytics",
-        action: "CLEAR_ANALYTICS",
-        description: 'Admin "divlatbang" membersihkan seluruh riwayat data analitik pengunjung.',
-        ip: "172.70.147.206",
-        createdAt: new Date("2026-08-03T18:41:00"),
-      },
-      {
-        admin: "divlatbang",
-        role: "DIVLATBANG",
-        module: "Peserta",
-        action: "UPDATE_STATUS",
-        description: "Mengubah status verifikasi untuk 25 peserta menjadi VERIFIED",
-        ip: "172.68.164.46",
-        createdAt: new Date("2026-08-02T16:36:00"),
-      },
-      {
-        admin: "admin_sidoarjo",
-        role: "ADMIN_KOTA",
-        module: "Peserta",
-        action: "CREATE_PESERTA",
-        description: "Mendaftar Peserta Baru: Eko Wawanto (Sda260016)",
-        ip: "104.22.130.137",
-        createdAt: new Date("2026-08-02T06:55:00"),
-      },
-      {
-        admin: "admin_sidoarjo",
-        role: "ADMIN_KOTA",
-        module: "Peserta",
-        action: "CREATE_PESERTA",
-        description: "Mendaftar Peserta Baru: Ali tofan (Sda260011)",
-        ip: "104.22.130.137",
-        createdAt: new Date("2026-08-02T06:52:00"),
-      },
-      {
-        admin: "admin_sidoarjo",
-        role: "ADMIN_KOTA",
-        module: "Peserta",
-        action: "CREATE_PESERTA",
-        description: "Mendaftar Peserta Baru: Raka Hasanudin (Sda260020)",
-        ip: "104.22.130.137",
-        createdAt: new Date("2026-08-02T06:45:00"),
-      },
-      {
-        admin: "divlatbang",
-        role: "DIVLATBANG",
-        module: "ActivityLog",
-        action: "CLEAR_LOGS",
-        description: 'Admin "divlatbang" membersihkan seluruh riwayat log aktivitas & audit log.',
-        ip: "108.162.226.155",
-        createdAt: new Date("2026-07-30T21:24:00"),
-      },
-    ];
-    await prisma.activityLog.createMany({ data: mockLogs });
-  }
+  try {
+    const count = await prisma.activityLog.count();
+    if (count === 0) {
+      // Seed exactly the 6 logs shown in the reference image
+      const mockLogs = [
+        {
+          admin: "divlatbang",
+          role: "DIVLATBANG",
+          module: "VisitorAnalytics",
+          action: "CLEAR_ANALYTICS",
+          description: 'Admin "divlatbang" membersihkan seluruh riwayat data analitik pengunjung.',
+          ip: "172.70.147.206",
+          createdAt: new Date("2026-08-03T18:41:00"),
+        },
+        {
+          admin: "divlatbang",
+          role: "DIVLATBANG",
+          module: "Peserta",
+          action: "UPDATE_STATUS",
+          description: "Mengubah status verifikasi untuk 25 peserta menjadi VERIFIED",
+          ip: "172.68.164.46",
+          createdAt: new Date("2026-08-02T16:36:00"),
+        },
+        {
+          admin: "admin_sidoarjo",
+          role: "ADMIN_KOTA",
+          module: "Peserta",
+          action: "CREATE_PESERTA",
+          description: "Mendaftar Peserta Baru: Eko Wawanto (Sda260016)",
+          ip: "104.22.130.137",
+          createdAt: new Date("2026-08-02T06:55:00"),
+        },
+        {
+          admin: "admin_sidoarjo",
+          role: "ADMIN_KOTA",
+          module: "Peserta",
+          action: "CREATE_PESERTA",
+          description: "Mendaftar Peserta Baru: Ali tofan (Sda260011)",
+          ip: "104.22.130.137",
+          createdAt: new Date("2026-08-02T06:52:00"),
+        },
+        {
+          admin: "admin_sidoarjo",
+          role: "ADMIN_KOTA",
+          module: "Peserta",
+          action: "CREATE_PESERTA",
+          description: "Mendaftar Peserta Baru: Raka Hasanudin (Sda260020)",
+          ip: "104.22.130.137",
+          createdAt: new Date("2026-08-02T06:45:00"),
+        },
+        {
+          admin: "divlatbang",
+          role: "DIVLATBANG",
+          module: "ActivityLog",
+          action: "CLEAR_LOGS",
+          description: 'Admin "divlatbang" membersihkan seluruh riwayat log aktivitas & audit log.',
+          ip: "108.162.226.155",
+          createdAt: new Date("2026-07-30T21:24:00"),
+        },
+      ];
+      await prisma.activityLog.createMany({ data: mockLogs });
+    }
 
-  return prisma.activityLog.findMany({
-    orderBy: { createdAt: "desc" },
-  });
+    return await prisma.activityLog.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (error) {
+    console.error("Failed to fetch activity logs:", error);
+    return [];
+  }
 }
 
 export async function clearActivityLogs(admin: string = "divlatbang", role: string = "DIVLATBANG") {
@@ -731,22 +760,27 @@ export async function trackVisitorAction(page: string = "/") {
 }
 
 export async function getVisitorLogs() {
-  const count = await prisma.visitorLog.count();
-  if (count === 0) {
-    await prisma.visitorLog.create({
-      data: {
-        device: "desktop",
-        ip: "172.70.147.206",
-        page: "/dashboard/divlatbang",
-        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        location: "Singapore, SG",
-        createdAt: new Date("2026-08-03T18:41:47"),
-      }
+  try {
+    const count = await prisma.visitorLog.count();
+    if (count === 0) {
+      await prisma.visitorLog.create({
+        data: {
+          device: "desktop",
+          ip: "172.70.147.206",
+          page: "/dashboard/divlatbang",
+          userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          location: "Singapore, SG",
+          createdAt: new Date("2026-08-03T18:41:47"),
+        }
+      });
+    }
+    return await prisma.visitorLog.findMany({
+      orderBy: { createdAt: "desc" },
     });
+  } catch (error) {
+    console.error("Failed to fetch visitor logs:", error);
+    return [];
   }
-  return prisma.visitorLog.findMany({
-    orderBy: { createdAt: "desc" },
-  });
 }
 
 export async function clearVisitorAnalytics(admin: string = "divlatbang", role: string = "DIVLATBANG") {
@@ -775,124 +809,87 @@ export async function clearVisitorAnalytics(admin: string = "divlatbang", role: 
 // SITE SETTINGS ACTIONS
 // ==========================================
 
+const DEFAULT_SITE_SETTINGS = {
+  id: "default",
+  logoText: "PADI SHARPENING",
+  logoUrl: "",
+  heroAnimationUrl: "",
+  heroTitle_id: "Kembalikan Ketajaman Sempurna Bilah Anda",
+  heroTitle_en: "Restore Your Blades to Perfect Sharpness",
+  heroSubtitle_id: "Jasa asah pisau profesional, penjualan alat tajam berkualitas tinggi, dan pelatihan asah presisi di Surabaya.",
+  heroSubtitle_en: "Professional knife sharpening services, high-quality cutlery sales, and precision sharpening training in Surabaya.",
+  stat1Value: "1,200+",
+  stat1Label_id: "Pisau Dipulihkan",
+  stat1Label_en: "Blades Restored",
+  stat2Value: "99.9%",
+  stat2Label_id: "Sudut Presisi",
+  stat2Label_en: "Precision Angle",
+  mapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3957.382894567406!2d112.7964!3d-7.3193!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7fa68903c706d%3A0xb3de4568393c706d!2sJl.%20Tambak%20Medokan%20Ayu%20III%20B%2C%20Medokan%20Ayu%2C%20Kec.%20Rungkut%2C%20Surabaya%2C%20Jawa%20Timur%2060295!5e0!3m2!1sid!2sid!4v1700000000000!5m2!1sid!2sid",
+  aboutTitle_id: "Siapa Kami?",
+  aboutTitle_en: "Who We Are?",
+  aboutDesc1_id: "Padi Sharpening Center adalah pusat asah profesional di Surabaya yang mendedikasikan diri untuk merawat dan memulihkan ketajaman segala jenis bilah. Mulai dari pisau dapur rumah tangga, pisau sembelih premium, hingga alat potong industri.",
+  aboutDesc1_en: "Padi Sharpening Center is a professional sharpening hub in Surabaya dedicated to maintaining and restoring the edge of all types of blades. From household kitchen knives, premium butcher blades, to industrial cutting tools.",
+  aboutDesc2_id: "Kami memadukan teknik asah manual tradisional dengan presisi mesin modern untuk menghasilkan ketajaman tingkat ekstrem (hair shaving sharp) dengan sudut yang terukur dan ketahanan ketajaman yang optimal.",
+  aboutDesc2_en: "We blend traditional hand-sharpening techniques with modern machine precision to deliver extreme edge sharpness (hair-shaving sharp) with calibrated bevel angles and long-lasting performance.",
+  feature1Title_id: "Presisi Tinggi",
+  feature1Title_en: "High Precision",
+  feature1Desc_id: "Sudut kemiringan bilah diukur secara presisi untuk menjamin hasil asahan yang rapi dan awet tajam.",
+  feature1Desc_en: "Blade angle is precisely measured to ensure neat and long-lasting sharpness.",
+  feature2Title_id: "Teknologi & Manual",
+  feature2Title_en: "Technology & Manual",
+  feature2Desc_id: "Kombinasi batu asah alam premium dan mesin water-cooled toormek berkualitas tinggi.",
+  feature2Desc_en: "A combination of premium natural whetstones and high-quality Tormek water-cooled machines.",
+  feature3Title_id: "Layanan Cepat",
+  feature3Title_en: "Fast Service",
+  feature3Desc_id: "Asah pisau harian Anda selesai dalam waktu singkat tanpa mengorbankan kualitas.",
+  feature3Desc_en: "Your daily knife sharpening is completed quickly without sacrificing quality.",
+  footerDesc_id: "Pusat layanan asah pisau profesional, penjualan alat tajam, dan pelatihan di Surabaya. Kembalikan ketajaman bilah Anda dengan presisi tinggi bersama Padi Solutions.",
+  footerDesc_en: "Professional knife sharpening service center, cutlery sales, and training in Surabaya. Restore your blade sharpness with high precision with Padi Solutions.",
+  footerAddress: "Jl. Tambak Medokan Ayu III B / 06, Rungkut, Surabaya, Jawa Timur 60295",
+  footerPhone: "+62 812-3456-789",
+  footerEmail: "info@padigroup.my.id",
+  footerCoordinates: "Surabaya, Jawa Timur (-7.3193; 112.7990)",
+  footerCopyright_id: "© 2026 Padi Sharpening Center. Hak Cipta Dilindungi.",
+  footerCopyright_en: "© 2026 Padi Sharpening Center. All Rights Reserved.",
+  footerBrand: "Padi Tech Solutions",
+  workingHours_id: "Senin - Sabtu (Monday - Saturday)\n08:00 - 17:00 WIB",
+  workingHours_en: "Monday - Saturday\n08:00 - 17:00 WIB",
+  servicesTitle_id: "Layanan Profesional Kami",
+  servicesTitle_en: "Our Professional Services",
+  servicesSubtitle_id: "Kami menawarkan jasa asah presisi tinggi, persewaan bilah/alat tajam, dan pengadaan skala komersial.",
+  servicesSubtitle_en: "We offer high-precision sharpening services, blade rental programs, and commercial-scale cutlery supply.",
+  servicesSectionTitle_id: "Jasa Asah Profesional",
+  servicesSectionTitle_en: "Professional Sharpening",
+  servicesSectionDesc_id: "Layanan asah profesional untuk pisau dapur, pisau sembelih, pisau daging, gunting, dan bilah industri. Menggunakan metode presisi sudut terkontrol.",
+  servicesSectionDesc_en: "Professional sharpening service for kitchen knives, butcher knives, meat cleavers, scissors, and industrial blades with angle-controlled methods.",
+  updatedAt: new Date(),
+};
+
 export async function getSiteSettings() {
-  let settings = await prisma.siteSettings.findUnique({
-    where: { id: "default" }
-  });
-  
-  if (!settings) {
-    settings = await prisma.siteSettings.create({
-      data: {
-        id: "default",
-        logoText: "PADI SHARPENING",
-        logoUrl: "",
-        heroAnimationUrl: "",
-        heroTitle_id: "Kembalikan Ketajaman Sempurna Bilah Anda",
-        heroTitle_en: "Restore Your Blades to Perfect Sharpness",
-        heroSubtitle_id: "Jasa asah pisau profesional, penjualan alat tajam berkualitas tinggi, dan pelatihan asah presisi di Surabaya.",
-        heroSubtitle_en: "Professional knife sharpening services, high-quality cutlery sales, and precision sharpening training in Surabaya.",
-        stat1Value: "1,200+",
-        stat1Label_id: "Pisau Dipulihkan",
-        stat1Label_en: "Blades Restored",
-        stat2Value: "99.9%",
-        stat2Label_id: "Sudut Presisi",
-        stat2Label_en: "Precision Angle",
-        mapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3957.382894567406!2d112.7964!3d-7.3193!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7fa68903c706d%3A0xb3de4568393c706d!2sJl.%20Tambak%20Medokan%20Ayu%20III%20B%2C%20Medokan%20Ayu%2C%20Kec.%20Rungkut%2C%20Surabaya%2C%20Jawa%20Timur%2060295!5e0!3m2!1sid!2sid!4v1700000000000!5m2!1sid!2sid",
-        aboutTitle_id: "Siapa Kami?",
-        aboutTitle_en: "Who We Are?",
-        aboutDesc1_id: "Padi Sharpening Center adalah pusat asah profesional di Surabaya yang mendedikasikan diri untuk merawat dan memulihkan ketajaman segala jenis bilah. Mulai dari pisau dapur rumah tangga, pisau sembelih premium, hingga alat potong industri.",
-        aboutDesc1_en: "Padi Sharpening Center is a professional sharpening hub in Surabaya dedicated to maintaining and restoring the edge of all types of blades. From household kitchen knives, premium butcher blades, to industrial cutting tools.",
-        aboutDesc2_id: "Kami memadukan teknik asah manual tradisional dengan presisi mesin modern untuk menghasilkan ketajaman tingkat ekstrem (hair shaving sharp) dengan sudut yang terukur dan ketahanan ketajaman yang optimal.",
-        aboutDesc2_en: "We blend traditional hand-sharpening techniques with modern machine precision to deliver extreme edge sharpness (hair-shaving sharp) with calibrated bevel angles and long-lasting performance.",
-        feature1Title_id: "Presisi Tinggi",
-        feature1Title_en: "High Precision",
-        feature1Desc_id: "Sudut kemiringan bilah diukur secara presisi untuk menjamin hasil asahan yang rapi dan awet tajam.",
-        feature1Desc_en: "Blade angle is precisely measured to ensure neat and long-lasting sharpness.",
-        feature2Title_id: "Teknologi & Manual",
-        feature2Title_en: "Technology & Manual",
-        feature2Desc_id: "Kombinasi batu asah alam premium dan mesin water-cooled toormek berkualitas tinggi.",
-        feature2Desc_en: "A combination of premium natural whetstones and high-quality Tormek water-cooled machines.",
-        feature3Title_id: "Layanan Cepat",
-        feature3Title_en: "Fast Service",
-        feature3Desc_id: "Asah pisau harian Anda selesai dalam waktu singkat tanpa mengorbankan kualitas.",
-        feature3Desc_en: "Your daily knife sharpening is completed quickly without sacrificing quality.",
-        footerDesc_id: "Pusat layanan asah pisau profesional, penjualan alat tajam, dan pelatihan di Surabaya. Kembalikan ketajaman bilah Anda dengan presisi tinggi bersama Padi Solutions.",
-        footerDesc_en: "Professional knife sharpening service center, cutlery sales, and training in Surabaya. Restore your blade sharpness with high precision with Padi Solutions.",
-        footerAddress: "Jl. Tambak Medokan Ayu III B / 06, Rungkut, Surabaya, Jawa Timur 60295",
-        footerPhone: "+62 812-3456-789",
-        footerEmail: "info@padigroup.my.id",
-        footerCoordinates: "Surabaya, Jawa Timur (-7.3193; 112.7990)",
-        footerCopyright_id: "© 2026 Padi Sharpening Center. Hak Cipta Dilindungi.",
-        footerCopyright_en: "© 2026 Padi Sharpening Center. All Rights Reserved.",
-        footerBrand: "Padi Tech Solutions",
-        workingHours_id: "Senin - Sabtu (Monday - Saturday)\n08:00 - 17:00 WIB",
-        workingHours_en: "Monday - Saturday\n08:00 - 17:00 WIB",
-        servicesTitle_id: "Layanan Profesional Kami",
-        servicesTitle_en: "Our Professional Services",
-        servicesSubtitle_id: "Kami menawarkan jasa asah presisi tinggi, persewaan bilah/alat tajam, dan pengadaan skala komersial.",
-        servicesSubtitle_en: "We offer high-precision sharpening services, blade rental programs, and commercial-scale cutlery supply.",
-        servicesSectionTitle_id: "Jasa Asah Profesional",
-        servicesSectionTitle_en: "Professional Sharpening",
-        servicesSectionDesc_id: "Layanan asah profesional untuk pisau dapur, pisau sembelih, pisau daging, gunting, dan bilah industri. Menggunakan metode presisi sudut terkontrol.",
-        servicesSectionDesc_en: "Professional sharpening service for kitchen knives, butcher knives, meat cleavers, scissors, and industrial blades with angle-controlled methods."
-      }
+  try {
+    let settings = await prisma.siteSettings.findUnique({
+      where: { id: "default" }
     });
+    
+    if (!settings) {
+      try {
+        settings = await prisma.siteSettings.create({
+          data: DEFAULT_SITE_SETTINGS,
+        });
+      } catch {
+        return DEFAULT_SITE_SETTINGS as any;
+      }
+    }
+    
+    // Populate dynamic fallbacks programmatically to prevent any null UI rendering
+    return {
+      ...DEFAULT_SITE_SETTINGS,
+      ...settings,
+    };
+  } catch (error) {
+    console.error("Failed to fetch site settings (falling back to default):", error);
+    return DEFAULT_SITE_SETTINGS as any;
   }
-  
-  // Populate dynamic fallbacks programmatically to prevent any null UI rendering
-  if (settings) {
-    if (!settings.logoText) settings.logoText = "PADI SHARPENING";
-    if (!settings.logoUrl) settings.logoUrl = "";
-    if (!settings.heroAnimationUrl) settings.heroAnimationUrl = "";
-    if (!settings.heroTitle_id) settings.heroTitle_id = "Kembalikan Ketajaman Sempurna Bilah Anda";
-    if (!settings.heroTitle_en) settings.heroTitle_en = "Restore Your Blades to Perfect Sharpness";
-    if (!settings.heroSubtitle_id) settings.heroSubtitle_id = "Jasa asah pisau profesional, penjualan alat tajam berkualitas tinggi, dan pelatihan asah presisi di Surabaya.";
-    if (!settings.heroSubtitle_en) settings.heroSubtitle_en = "Professional knife sharpening services, high-quality cutlery sales, and precision sharpening training in Surabaya.";
-    if (!settings.stat1Value) settings.stat1Value = "1,200+";
-    if (!settings.stat1Label_id) settings.stat1Label_id = "Pisau Dipulihkan";
-    if (!settings.stat1Label_en) settings.stat1Label_en = "Blades Restored";
-    if (!settings.stat2Value) settings.stat2Value = "99.9%";
-    if (!settings.stat2Label_id) settings.stat2Label_id = "Sudut Presisi";
-    if (!settings.stat2Label_en) settings.stat2Label_en = "Precision Angle";
-    if (!settings.mapsEmbedUrl) settings.mapsEmbedUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3957.382894567406!2d112.7964!3d-7.3193!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7fa68903c706d%3A0xb3de4568393c706d!2sJl.%20Tambak%20Medokan%20Ayu%20III%20B%2C%20Medokan%20Ayu%2C%20Kec.%20Rungkut%2C%20Surabaya%2C%20Jawa%20Timur%2060295!5e0!3m2!1sid!2sid!4v1700000000000!5m2!1sid!2sid";
-    if (!settings.aboutTitle_id) settings.aboutTitle_id = "Siapa Kami?";
-    if (!settings.aboutTitle_en) settings.aboutTitle_en = "Who We Are?";
-    if (!settings.aboutDesc1_id) settings.aboutDesc1_id = "Padi Sharpening Center adalah pusat asah profesional di Surabaya yang mendedikasikan diri untuk merawat dan memulihkan ketajaman segala jenis bilah. Mulai dari pisau dapur rumah tangga, pisau sembelih premium, hingga alat potong industri.";
-    if (!settings.aboutDesc1_en) settings.aboutDesc1_en = "Padi Sharpening Center is a professional sharpening hub in Surabaya dedicated to maintaining and restoring the edge of all types of blades. From household kitchen knives, premium butcher blades, to industrial cutting tools.";
-    if (!settings.aboutDesc2_id) settings.aboutDesc2_id = "Kami memadukan teknik asah manual tradisional dengan presisi mesin modern untuk menghasilkan ketajaman tingkat ekstrem (hair shaving sharp) dengan sudut yang terukur dan ketahanan ketajaman yang optimal.";
-    if (!settings.aboutDesc2_en) settings.aboutDesc2_en = "We blend traditional hand-sharpening techniques with modern machine precision to deliver extreme edge sharpness (hair-shaving sharp) with calibrated bevel angles and long-lasting performance.";
-    if (!settings.feature1Title_id) settings.feature1Title_id = "Presisi Tinggi";
-    if (!settings.feature1Title_en) settings.feature1Title_en = "High Precision";
-    if (!settings.feature1Desc_id) settings.feature1Desc_id = "Sudut kemiringan bilah diukur secara presisi untuk menjamin hasil asahan yang rapi dan awet tajam.";
-    if (!settings.feature1Desc_en) settings.feature1Desc_en = "Blade angle is precisely measured to ensure neat and long-lasting sharpness.";
-    if (!settings.feature2Title_id) settings.feature2Title_id = "Teknologi & Manual";
-    if (!settings.feature2Title_en) settings.feature2Title_en = "Technology & Manual";
-    if (!settings.feature2Desc_id) settings.feature2Desc_id = "Kombinasi batu asah alam premium dan mesin water-cooled toormek berkualitas tinggi.";
-    if (!settings.feature2Desc_en) settings.feature2Desc_en = "A combination of premium natural whetstones and high-quality Tormek water-cooled machines.";
-    if (!settings.feature3Title_id) settings.feature3Title_id = "Layanan Cepat";
-    if (!settings.feature3Title_en) settings.feature3Title_en = "Fast Service";
-    if (!settings.feature3Desc_id) settings.feature3Desc_id = "Asah pisau harian Anda selesai dalam waktu singkat tanpa mengorbankan kualitas.";
-    if (!settings.feature3Desc_en) settings.feature3Desc_en = "Your daily knife sharpening is completed quickly without sacrificing quality.";
-    if (!settings.footerDesc_id) settings.footerDesc_id = "Pusat layanan asah pisau profesional, penjualan alat tajam, dan pelatihan di Surabaya. Kembalikan ketajaman bilah Anda dengan presisi tinggi bersama Padi Solutions.";
-    if (!settings.footerDesc_en) settings.footerDesc_en = "Professional knife sharpening service center, cutlery sales, and training in Surabaya. Restore your blade sharpness with high precision with Padi Solutions.";
-    if (!settings.footerAddress) settings.footerAddress = "Jl. Tambak Medokan Ayu III B / 06, Rungkut, Surabaya, Jawa Timur 60295";
-    if (!settings.footerPhone) settings.footerPhone = "+62 812-3456-789";
-    if (!settings.footerCopyright_id) settings.footerCopyright_id = "© 2026 Padi Sharpening Center. Hak Cipta Dilindungi.";
-    if (!settings.footerCopyright_en) settings.footerCopyright_en = "© 2026 Padi Sharpening Center. All Rights Reserved.";
-    if (!settings.footerBrand) settings.footerBrand = "Padi Tech Solutions";
-    if (!settings.workingHours_id) settings.workingHours_id = "Senin - Sabtu (Monday - Saturday)\n08:00 - 17:00 WIB";
-    if (!settings.workingHours_en) settings.workingHours_en = "Monday - Saturday\n08:00 - 17:00 WIB";
-    if (!settings.servicesTitle_id) settings.servicesTitle_id = "Layanan Profesional Kami";
-    if (!settings.servicesTitle_en) settings.servicesTitle_en = "Our Professional Services";
-    if (!settings.servicesSubtitle_id) settings.servicesSubtitle_id = "Kami menawarkan jasa asah presisi tinggi, persewaan bilah/alat tajam, dan pengadaan skala komersial.";
-    if (!settings.servicesSubtitle_en) settings.servicesSubtitle_en = "We offer high-precision sharpening services, blade rental programs, and commercial-scale cutlery supply.";
-    if (!settings.servicesSectionTitle_id) settings.servicesSectionTitle_id = "Jasa Asah Profesional";
-    if (!settings.servicesSectionTitle_en) settings.servicesSectionTitle_en = "Professional Sharpening";
-    if (!settings.servicesSectionDesc_id) settings.servicesSectionDesc_id = "Layanan asah profesional untuk pisau dapur, pisau sembelih, pisau daging, gunting, dan bilah industri. Menggunakan metode presisi sudut terkontrol.";
-    if (!settings.servicesSectionDesc_en) settings.servicesSectionDesc_en = "Professional sharpening service for kitchen knives, butcher knives, meat cleavers, scissors, and industrial blades with angle-controlled methods.";
-  }
-  
-  return settings;
 }
 
 export async function updateSiteSettings(data: {
