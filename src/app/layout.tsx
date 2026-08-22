@@ -9,17 +9,29 @@ import { getSiteSettings } from "./admin/actions";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Padi Sharpening Center - Jasa Asah Pisau Profesional & Alat Sembelih",
+  metadataBase: new URL("https://sharpening.padigroup.my.id"),
+  title: {
+    default: "Padi Sharpening Center - Jasa Asah Pisau Profesional & Alat Sembelih Surabaya",
+    template: "%s | Padi Sharpening Center",
+  },
   description: "Pusat layanan asah pisau profesional, penjualan alat tajam, dan pelatihan di Surabaya. Kembalikan ketajaman bilah Anda dengan presisi tinggi bersama Padi Solutions.",
-  keywords: "Jasa asah pisau Surabaya, Jasa asah pisau terdekat, Asah pisau profesional dan terbaik, jasa asah termurah, Jasa asah paling terpercaya Jual pisau sembelih termurah, Pelatihan asah pisau paling terpercaya, Batu asah berkualitas daerah Surabaya, Padi Sharpening Center, Jasa juru sembelih halal bersertifikat BNSP, Jasa aqiqah terdekat dan terpercaya, Jual hewan ternak terbaik, Jasa jagal profesional, Jual aksesoris pisau termurah, Jasa aqiqah terbaik dan termurah, Jual batu asah terdekat, jual batu asah termurah dan terpercaya, Jual pisau Terdekat, Jual pisau termurah dan terpercaya, jasa asah pisau indonesia, jual hewan ternak indonesia, jual hewan ternak terpercaya dan termurah, ",
+  keywords: "Jasa asah pisau Surabaya, Jasa asah pisau terdekat, Asah pisau profesional dan terbaik, jasa asah termurah, Jasa asah paling terpercaya, Jual pisau sembelih termurah, Pelatihan asah pisau paling terpercaya, Batu asah berkualitas daerah Surabaya, Padi Sharpening Center, Jasa juru sembelih halal bersertifikat BNSP, Jasa aqiqah terdekat dan terpercaya, Jual hewan ternak terbaik, Jasa jagal profesional, Jual aksesoris pisau termurah, Jasa aqiqah terbaik dan termurah, Jual batu asah terdekat, jual batu asah termurah dan terpercaya, Jual pisau Terdekat, Jual pisau termurah dan terpercaya, jasa asah pisau indonesia, jual hewan ternak indonesia, jual hewan ternak terpercaya dan termurah",
+  authors: [{ name: "Padi Sharpening Center", url: "https://sharpening.padigroup.my.id" }],
+  creator: "Padi Solutions",
+  publisher: "Padi Sharpening Center",
+  alternates: {
+    canonical: "https://sharpening.padigroup.my.id",
+  },
   robots: {
     index: true,
     follow: true,
@@ -76,40 +88,55 @@ export default async function RootLayout({
 
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "name": "Padi Sharpening Center",
-    "image": "https://sharpening.padigroup.my.id/logo.webp",
-    "@id": "https://sharpening.padigroup.my.id/#localbusiness",
-    "url": "https://sharpening.padigroup.my.id",
-    "telephone": schemaPhone,
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": "Jl. Tambak Medokan Ayu III B / 06, Kelurahan Medokan Ayu, Kecamatan Rungkut",
-      "addressLocality": "Surabaya",
-      "addressRegion": "Jawa Timur",
-      "postalCode": "60295",
-      "addressCountry": "ID"
-    },
-    "geo": {
-      "@type": "GeoCoordinates",
-      "latitude": -7.3193,
-      "longitude": 112.7990
-    },
-    "openingHoursSpecification": {
-      "@type": "OpeningHoursSpecification",
-      "dayOfWeek": [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday"
-      ],
-      "opens": "08:00",
-      "closes": "17:00"
-    },
-    "sameAs": [
-      "https://www.instagram.com/padisharpening"
+    "@graph": [
+      {
+        "@type": "LocalBusiness",
+        "@id": "https://sharpening.padigroup.my.id/#localbusiness",
+        "name": "Padi Sharpening Center",
+        "image": "https://sharpening.padigroup.my.id/logo.webp",
+        "url": "https://sharpening.padigroup.my.id",
+        "telephone": schemaPhone,
+        "priceRange": "$$",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Jl. Tambak Medokan Ayu III B / 06, Kelurahan Medokan Ayu, Kecamatan Rungkut",
+          "addressLocality": "Surabaya",
+          "addressRegion": "Jawa Timur",
+          "postalCode": "60295",
+          "addressCountry": "ID"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": -7.3193,
+          "longitude": 112.7990
+        },
+        "openingHoursSpecification": {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday"
+          ],
+          "opens": "08:00",
+          "closes": "17:00"
+        },
+        "sameAs": [
+          "https://www.instagram.com/padisharpening"
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://sharpening.padigroup.my.id/#website",
+        "url": "https://sharpening.padigroup.my.id",
+        "name": "Padi Sharpening Center",
+        "description": "Pusat Jasa Asah Pisau Profesional, Penjualan Alat Tajam, dan Pelatihan di Surabaya",
+        "publisher": {
+          "@id": "https://sharpening.padigroup.my.id/#localbusiness"
+        }
+      }
     ]
   };
 
@@ -120,6 +147,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <link rel="help" type="text/plain" href="/llms.txt" title="LLMs context" />
         {/* Instant blocking theme script to eliminate any white flash on dark mode devices */}
         <script
           dangerouslySetInnerHTML={{

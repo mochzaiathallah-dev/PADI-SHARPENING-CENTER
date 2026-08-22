@@ -12,14 +12,19 @@ function NavigationProgressContent() {
   // Reset progress when route change completes
   useEffect(() => {
     if (isLoading) {
-      setProgress(100);
-      const timer = setTimeout(() => {
+      const timer1 = setTimeout(() => {
+        setProgress(100);
+      }, 0);
+      const timer2 = setTimeout(() => {
         setIsLoading(false);
         setProgress(0);
       }, 250);
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(timer1);
+        clearTimeout(timer2);
+      };
     }
-  }, [pathname, searchParams]);
+  }, [pathname, searchParams, isLoading]);
 
   // Intercept link clicks & buttons with data-nav attribute
   useEffect(() => {
@@ -72,10 +77,10 @@ function NavigationProgressContent() {
   if (!isLoading && progress === 0) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none">
+    <div className="fixed top-0 left-0 right-0 z-9999 pointer-events-none">
       {/* Top glowing progress bar */}
       <div
-        className="h-1 bg-gradient-to-r from-primary via-amber-500 to-primary transition-all duration-300 ease-out shadow-[0_0_12px_hsl(var(--primary)/0.8)]"
+        className="h-1 bg-linear-to-r from-primary via-amber-500 to-primary transition-all duration-300 ease-out shadow-[0_0_12px_hsl(var(--primary)/0.8)]"
         style={{
           width: `${progress}%`,
           opacity: isLoading || progress > 0 ? 1 : 0,
@@ -84,7 +89,7 @@ function NavigationProgressContent() {
 
       {/* Floating subtle loading badge */}
       {isLoading && (
-        <div className="fixed top-4 right-4 bg-background/90 backdrop-blur-md border border-primary/30 px-3.5 py-1.5 rounded-full shadow-xl flex items-center space-x-2 animate-fade-in text-xs font-semibold text-foreground z-[9999]">
+        <div className="fixed top-4 right-4 bg-background/90 backdrop-blur-md border border-primary/30 px-3.5 py-1.5 rounded-full shadow-xl flex items-center space-x-2 animate-fade-in text-xs font-semibold text-foreground z-9999">
           <div className="w-3.5 h-3.5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
           <span>Memuat...</span>
         </div>

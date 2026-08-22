@@ -1,0 +1,28 @@
+# Padi Sharpening Center (Pusat Jasa Asah Pisau & Bilah Profesional Surabaya)
+> Pusat layanan asah pisau profesional, penjualan alat tajam berkualitas tinggi, dan pelatihan asah presisi di Surabaya, Jawa Timur, Indonesia.
+
+## About
+Padi Sharpening Center memadukan teknik asah manual tradisional dengan presisi mesin modern water-cooled Tormek untuk menghasilkan ketajaman tingkat ekstrem (hair shaving sharp) dengan sudut yang terukur (15° - 20°) dan ketahanan ketajaman yang optimal.
+
+## Layanan Utama (Core Services)
+- **Jasa Asah Pisau Dapur & Chef Knife**: Asah sudut presisi untuk koki profesional, restoran, catering, dan rumah tangga.
+- **Jasa Asah Pisau Sembelih & Jagal (Juleha)**: Spesialisasi bilah sembelih hewan qurban dan aqiqah dengan standar syar'i dan kehalalan bersertifikat BNSP.
+- **Jasa Asah Golok, Pedang, & Katana**: Restorasi bilah pusaka dan koleksi dengan finishing mirror polish.
+- **Jasa Asah Gunting Kain & Rambut**: Perataan bilah dan penyesuaian tension pivot.
+- **Penjualan Bilah & Batu Asah**: Menyediakan batu asah alam premium, pisau sembelih, dan sarung pengaman bilah.
+- **Pelatihan Asah Profesional (Sharpening Academy)**: Kelas teori dan praktek asah pisau dari tingkat dasar hingga mahir.
+
+## Lokasi & Kontak
+- **Alamat**: Jl. Tambak Medokan Ayu III B / 06, Medokan Ayu, Kec. Rungkut, Surabaya, Jawa Timur 60295, Indonesia
+- **Telepon / WhatsApp**: +62 812-3456-789
+- **Website**: https://sharpening.padigroup.my.id
+- **Jam Operasional**: Senin - Sabtu: 08:00 - 17:00 WIB
+
+## Struktur Halaman (Sitemap Reference)
+- Beranda: https://sharpening.padigroup.my.id/
+- Tentang Kami: https://sharpening.padigroup.my.id/about
+- Layanan Kami: https://sharpening.padigroup.my.id/services
+- Katalog Produk: https://sharpening.padigroup.my.id/catalog
+- Portofolio Asah: https://sharpening.padigroup.my.id/portfolio
+- Pelatihan Asah: https://sharpening.padigroup.my.id/training
+- Kontak & Lokasi: https://sharpening.padigroup.my.id/contact

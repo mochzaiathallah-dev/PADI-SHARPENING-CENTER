@@ -195,7 +195,7 @@ export function AppProvider({
   initialSettings 
 }: { 
   children: React.ReactNode; 
-  initialSettings?: any;
+  initialSettings?: Record<string, any>;
 }) {
   const [theme, setThemeState] = useState<Theme>("system");
   const [language, setLanguageState] = useState<Language>("id");
@@ -225,8 +225,6 @@ export function AppProvider({
   const [servicesSectionTitleEn, setServicesSectionTitleEn] = useState(initialSettings?.servicesSectionTitle_en || "Professional Sharpening");
   const [servicesSectionDescId, setServicesSectionDescId] = useState(initialSettings?.servicesSectionDesc_id || "Layanan asah profesional untuk pisau dapur, pisau sembelih, pisau daging, gunting, dan bilah industri. Menggunakan metode presisi sudut terkontrol.");
   const [servicesSectionDescEn, setServicesSectionDescEn] = useState(initialSettings?.servicesSectionDesc_en || "Professional sharpening service for kitchen knives, butcher knives, meat cleavers, scissors, and industrial blades with angle-controlled methods.");
-
-  const [mounted, setMounted] = useState(false);
 
   const loadSettings = async () => {
     try {
@@ -282,49 +280,51 @@ export function AppProvider({
       originalWarn(...args);
     };
 
-    // 1. Language Initialization
-    const savedLang = localStorage.getItem("lang") as Language | null;
-    if (savedLang === "id" || savedLang === "en") {
-      setLanguageState(savedLang);
-    } else {
-      const systemLang = navigator.language.toLowerCase();
-      const detectedLang: Language = systemLang.startsWith("id") ? "id" : "en";
-      setLanguageState(detectedLang);
-      localStorage.setItem("lang", detectedLang);
-    }
-
-    // 2. Theme Initialization (Resolve system preference automatically if not saved)
-    const savedTheme = localStorage.getItem("theme") as Theme | null;
-    let initialTheme: Theme;
-    if (savedTheme === "light" || savedTheme === "dark") {
-      initialTheme = savedTheme;
-    } else {
-      const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      initialTheme = isDark ? "dark" : "light";
-    }
-    setThemeState(initialTheme);
-    const root = window.document.documentElement;
-    root.classList.remove("light", "dark");
-    root.classList.add(initialTheme);
-
-    // 3. Track visitor session dynamically once per path per session (reduces DB function invocations)
-    try {
-      const trackKey = "tracked_" + window.location.pathname;
-      if (!sessionStorage.getItem(trackKey)) {
-        sessionStorage.setItem(trackKey, "1");
-        trackVisitorAction(window.location.pathname).catch((err) => console.error("Visitor tracking failed:", err));
+    const timer = setTimeout(() => {
+      // 1. Language Initialization
+      const savedLang = localStorage.getItem("lang") as Language | null;
+      if (savedLang === "id" || savedLang === "en") {
+        setLanguageState(savedLang);
+      } else {
+        const systemLang = navigator.language.toLowerCase();
+        const detectedLang: Language = systemLang.startsWith("id") ? "id" : "en";
+        setLanguageState(detectedLang);
+        localStorage.setItem("lang", detectedLang);
       }
-    } catch {
-      // Fallback if sessionStorage is disabled/blocked
-    }
 
-    // 4. Load branding configs dynamically only if initialSettings wasn't provided by SSR
-    if (!initialSettings) {
-      loadSettings();
-    }
+      // 2. Theme Initialization (Resolve system preference automatically if not saved)
+      const savedTheme = localStorage.getItem("theme") as Theme | null;
+      let initialTheme: Theme;
+      if (savedTheme === "light" || savedTheme === "dark") {
+        initialTheme = savedTheme;
+      } else {
+        const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        initialTheme = isDark ? "dark" : "light";
+      }
+      setThemeState(initialTheme);
+      const root = window.document.documentElement;
+      root.classList.remove("light", "dark");
+      root.classList.add(initialTheme);
 
-    setMounted(true);
-  }, []);
+      // 3. Track visitor session dynamically once per path per session (reduces DB function invocations)
+      try {
+        const trackKey = "tracked_" + window.location.pathname;
+        if (!sessionStorage.getItem(trackKey)) {
+          sessionStorage.setItem(trackKey, "1");
+          trackVisitorAction(window.location.pathname).catch((err) => console.error("Visitor tracking failed:", err));
+        }
+      } catch {
+        // Fallback if sessionStorage is disabled/blocked
+      }
+
+      // 4. Load branding configs dynamically only if initialSettings wasn't provided by SSR
+      if (!initialSettings) {
+        loadSettings();
+      }
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [initialSettings]);
 
   // Update document class based on theme state
   useEffect(() => {

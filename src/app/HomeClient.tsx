@@ -67,19 +67,6 @@ type HomeClientProps = {
 function HeroMediaContainer({ settings }: { settings: SiteSettingsType }) {
   const [shouldLoad3D, setShouldLoad3D] = useState(false);
 
-  useEffect(() => {
-    // Load 3D canvas after page idle (3500ms) to ensure 0ms main thread blocking on initial page load
-    if (typeof window !== "undefined") {
-      if ("requestIdleCallback" in window) {
-        const id = (window as any).requestIdleCallback(() => setShouldLoad3D(true), { timeout: 3500 });
-        return () => (window as any).cancelIdleCallback(id);
-      } else {
-        const timer = setTimeout(() => setShouldLoad3D(true), 3500);
-        return () => clearTimeout(timer);
-      }
-    }
-  }, []);
-
   const isVideoBase64 = (url: string | null) => {
     if (!url) return false;
     if (url.startsWith("data:video/") || url.includes("video/mp4")) return true;
@@ -89,17 +76,24 @@ function HeroMediaContainer({ settings }: { settings: SiteSettingsType }) {
 
   return (
     <div 
-      onMouseEnter={() => setShouldLoad3D(true)}
-      onTouchStart={() => setShouldLoad3D(true)}
-      className="lg:col-span-6 w-full h-87.5 sm:h-125 min-h-87.5 sm:min-h-125 flex items-center justify-center bg-card/45 border border-border/60 rounded-3xl overflow-hidden shadow-2xl relative shrink-0"
-      style={{ minHeight: "350px", height: "500px" }}
+      className="lg:col-span-6 w-full h-90 sm:h-115 lg:h-125 flex items-center justify-center bg-card/45 border border-border/60 rounded-3xl overflow-hidden shadow-2xl relative shrink-0"
     >
       {/* Abstract corner decors */}
-      <div className="absolute top-4 left-4 flex space-x-1 z-10">
-        <div className="h-2 w-2 rounded-full bg-border" />
-        <div className="h-2 w-2 rounded-full bg-border" />
-        <div className="h-2 w-2 rounded-full bg-border" />
+      <div className="absolute top-4 left-4 flex space-x-1.5 z-10">
+        <div className="h-2.5 w-2.5 rounded-full bg-primary/40" />
+        <div className="h-2.5 w-2.5 rounded-full bg-border" />
+        <div className="h-2.5 w-2.5 rounded-full bg-border" />
       </div>
+
+      {shouldLoad3D && (
+        <button
+          onClick={() => setShouldLoad3D(false)}
+          className="absolute top-4 right-4 z-20 px-3 py-1 text-xs font-semibold rounded-full bg-background/90 text-foreground border border-border/80 shadow hover:bg-accent transition-colors"
+          aria-label="Tutup Mode 3D"
+        >
+          ✕ Tutup 3D
+        </button>
+      )}
       
       {settings.heroAnimationUrl && isVideoBase64(settings.heroAnimationUrl) ? (
         <video
@@ -113,18 +107,26 @@ function HeroMediaContainer({ settings }: { settings: SiteSettingsType }) {
       ) : shouldLoad3D ? (
         <Hero3D imageUrl={settings.heroAnimationUrl} />
       ) : (
-        <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center relative group cursor-pointer">
-          <div className="absolute inset-0 bg-linear-to-tr from-primary/10 via-transparent to-primary/5 animate-pulse" />
+        <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center relative group">
+          <div className="absolute inset-0 bg-linear-to-tr from-primary/10 via-transparent to-primary/5 pointer-events-none" />
           <img
             src="/uploads/1785501651772_Gemini_Generated_Image_murzqsmurzqsmurz-clean-Photoroom.png"
             alt="Padi Sharpening Premium Blade Preview"
-            width={300}
-            height={225}
-            className="w-64 sm:w-80 h-auto object-contain drop-shadow-2xl transform group-hover:scale-105 transition-transform duration-500"
+            width={480}
+            height={360}
+            fetchPriority="high"
+            decoding="async"
+            className="w-64 sm:w-80 md:w-96 max-w-full h-auto object-contain drop-shadow-2xl transform group-hover:scale-105 transition-transform duration-500 pointer-events-none select-none"
           />
-          <div className="mt-4 inline-flex items-center space-x-2 rounded-full bg-background/80 backdrop-blur border border-border px-3 py-1 text-xs font-semibold text-muted-foreground shadow-sm z-10">
-            <span>✨ 3D Interactive Preview</span>
-          </div>
+          <button
+            type="button"
+            onClick={() => setShouldLoad3D(true)}
+            className="mt-4 inline-flex items-center space-x-2 rounded-full bg-background/90 hover:bg-background border border-primary/40 hover:border-primary px-4 py-1.5 text-xs font-bold text-foreground shadow-md transition-all z-10 cursor-pointer group-hover:shadow-primary/20"
+            aria-label="Aktifkan Mode 3D Interaktif untuk memutar bilah"
+          >
+            <span>✨ Mode 3D Interaktif</span>
+            <span className="text-[10px] bg-primary/15 text-primary px-1.5 py-0.5 rounded font-mono">PUTAR</span>
+          </button>
         </div>
       )}
     </div>

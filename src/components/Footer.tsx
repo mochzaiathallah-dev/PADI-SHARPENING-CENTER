@@ -58,6 +58,7 @@ export default function Footer() {
                   height={32} 
                   className="w-8 h-8 object-contain shrink-0" 
                   loading="lazy"
+                  decoding="async"
                 />
               )}
               <span className="text-xl font-black tracking-tight uppercase text-foreground">

@@ -24,11 +24,37 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: "/(.*).(png|jpg|jpeg|gif|webp|ico|svg)",
+        source: "/(.*).(png|jpg|jpeg|gif|webp|ico|svg|woff|woff2)",
         headers: [
           {
             key: "Cache-Control",
             value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
+        source: "/llms.txt",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, stale-while-revalidate=43200",
+          },
+          {
+            key: "Content-Type",
+            value: "text/plain; charset=utf-8",
+          },
+        ],
+      },
+      {
+        source: "/llms-full.txt",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, stale-while-revalidate=43200",
+          },
+          {
+            key: "Content-Type",
+            value: "text/plain; charset=utf-8",
           },
         ],
       },

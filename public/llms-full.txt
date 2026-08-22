@@ -1,0 +1,27 @@
+# Padi Sharpening Center - Full Documentation & AI Context
+
+## Entity Information
+- **Name**: Padi Sharpening Center
+- **Parent Brand**: Padi Solutions / Padi Group
+- **Primary Business**: Professional Knife Sharpening, Blade Sales, Sharpening Training, Halal Slaughtering Services (Juleha).
+- **Location**: Surabaya, East Java, Indonesia (Lat: -7.3193, Long: 112.7990)
+- **Primary Website**: https://sharpening.padigroup.my.id
+
+## Detailed Services
+1. **Jasa Asah Pisau Dapur (Kitchen Knives)**:
+   - Santoku, Gyuto, Nakiri, Chef Knife, Paring Knife, Boning Knife, Slicing Knife.
+   - Pilihan sudut: 15° untuk pisau Jepang/presisi, 20° untuk pisau Eropa/tahan banting.
+2. **Jasa Asah Pisau Sembelih & Jagal**:
+   - Pisau sembelih sapi, kambing, unggas. Standar Juleha (Juru Sembelih Halal).
+   - Tes ketajaman: Iris kertas mulus tanpa serat (clean push cut), cukur bulu (hair shaving).
+3. **Restorasi & Reprofiling**:
+   - Perbaikan mata pisau gompal (chipped edge), patah ujung (broken tip), dan penipisan bilah (thinning).
+4. **Katalog & Peralatan**:
+   - Batu asah alam (natural whetstones) grit 1000 - 8000.
+   - Pisau sembelih premium stainless steel dan high carbon steel.
+   - Sarung kulit dan kydex custom.
+
+## Contact Information
+- **Address**: Jl. Tambak Medokan Ayu III B / 06, Medokan Ayu, Kec. Rungkut, Surabaya, Jawa Timur 60295
+- **Phone / WhatsApp**: +62 812-3456-789
+- **Official URL**: https://sharpening.padigroup.my.id

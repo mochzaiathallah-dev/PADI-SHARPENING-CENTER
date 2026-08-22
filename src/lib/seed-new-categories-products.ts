@@ -1,7 +1,6 @@
 import "dotenv/config";
 import { prisma } from "./prisma";
 import * as fs from "fs";
-import * as path from "path";
 
 async function main() {
   console.log("Starting seeding new categories and products...");
